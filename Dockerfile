@@ -10,9 +10,12 @@ ENV LANG=C.UTF-8 \
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY docker-setup/pin_conda_package_version.sh /etc/profile.d/
 RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc \
-    && apt-get update --fix-missing \
-    && apt-get install -y --no-install-recommends eatmydata \
-    && eatmydata apt-get install -y --no-install-recommends \
+    && sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+    && sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list \
+    && sed -i '/stretch-updates/d' /etc/apt/sources.list \
+    && apt-get -o Acquire::Check-Valid-Until=false update --fix-missing \
+    && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends eatmydata \
+    && eatmydata apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends \
         bzip2 \
         ca-certificates \
         g++ \
@@ -21,7 +24,7 @@ RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashr
         sudo \
         vim \
         wget \
-    && eatmydata apt-get install -y python-dev \
+    && eatmydata apt-get -o Acquire::Check-Valid-Until=false install -y python-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py38_4.8.3-Linux-x86_64.sh -O ~/miniconda.sh \
