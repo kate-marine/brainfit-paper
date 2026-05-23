@@ -1,5 +1,8 @@
 # noinspection PyPackageRequirements
-import datawrangler as dw
+try:
+    import datawrangler as dw
+except ModuleNotFoundError:
+    dw = None
 import os
 import sys
 import numpy as np
@@ -7,24 +10,40 @@ import pandas as pd
 import ast
 import json
 import datetime
-import quail
-import nltk
+try:
+    import quail
+except (ModuleNotFoundError, ImportError):
+    quail = None
+try:
+    import nltk
+except (ModuleNotFoundError, ImportError):
+    nltk = None
 import warnings
 import pickle
 import datetime as dt
 
 # noinspection PyPackageRequirements
-from spellchecker import SpellChecker
+try:
+    from spellchecker import SpellChecker
+except (ModuleNotFoundError, ImportError):
+    SpellChecker = None
 from glob import glob as lsdir
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats import wasserstein_distance, pearsonr, zscore
 from sklearn.linear_model import LinearRegression
-from flair.models import TextClassifier
-from flair.data import Sentence
+try:
+    from flair.models import TextClassifier
+    from flair.data import Sentence
+except (ModuleNotFoundError, ImportError):
+    TextClassifier = None
+    Sentence = None
 
-import brainiak.eventseg.event as event
+try:
+    import brainiak.eventseg.event as event
+except (ModuleNotFoundError, ImportError):
+    event = None
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -372,7 +391,7 @@ def get_list_items(data, lists=None, pres_prefix='', rec_prefix='', aggregate_pr
             for i, x in enumerate(lists):
                 presented_items = [get_features(w) for w in subj_data[f'{pres_prefix}{x}'] if type(w) is not float]
                 if aggregate_presentations:
-                    list_presentations.extend([dw.core.update_dict(i, {'list': x}) for i in presented_items])
+                    list_presentations.extend([{**i, 'list': x} for i in presented_items])
                     if i == 0:
                         try:
                             list_recalls.extend([get_features(w) for w in subj_data[f'{rec_prefix}'] if type(w) is not float])
