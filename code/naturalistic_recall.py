@@ -1,5 +1,8 @@
 # noinspection PyPackageRequirements
-import datawrangler as dw
+try:
+    import datawrangler as dw
+except ModuleNotFoundError:
+    dw = None
 
 import math
 
