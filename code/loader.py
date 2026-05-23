@@ -349,7 +349,7 @@ def get_list_items(data, lists=None, pres_prefix='', rec_prefix='', aggregate_pr
 
         # basic spelling correction
         if type(word) is str:
-            word = spell.correction(word.capitalize())
+            word = spell.correction(word.capitalize()) or word
         else:
             raise ValueError(f'cannot process words of type {type(word)}')
 
