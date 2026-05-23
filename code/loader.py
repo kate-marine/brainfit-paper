@@ -651,7 +651,7 @@ def spatial_estimation_error(data, n, metric='mean'):
             trial_errors = []
             for k in target_positions.keys():
                 trial_errors.append(float(cdist(np.atleast_2d(target_positions[k]),
-                                                np.atleast_2d(response_positions[k]))))
+                                                np.atleast_2d(response_positions[k]))[0, 0]))
             next_errors.append(np.mean(trial_errors))
 
         if metric == 'mean':
