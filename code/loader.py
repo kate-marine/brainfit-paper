@@ -849,40 +849,61 @@ def behavioral_stats(parsed):
 
         stats['naturalistic recall']['immediate']['proportion correct'][s] = n_correct / len(correct_responses)
 
+    # reconstruct transcripts here (also needed for n_sentences regardless of embeddings)
+    immediate_recall = []
+    delayed_recall = []
+    for s in range(len(parsed['experiment'])):
+        if 'movie_sent_recall' in parsed['experiment'][s].keys():
+            immediate_recall.append([r.strip().lower() for r in parsed['experiment'][s]['movie_sent_recall']
+                                     if type(r) is str and len(r) > 1])
+        else:
+            immediate_recall.append([])
+        if 'movie_sent_recall_delay' in parsed['experiment'][s].keys():
+            delayed_recall.append([r.strip().lower() for r in parsed['experiment'][s]['movie_sent_recall_delay']
+                                   if type(r) is str])
+        else:
+            delayed_recall.append([])
+    immediate_transcripts = [' '.join(x) for x in immediate_recall]
+    delayed_transcripts = [' '.join(x) for x in delayed_recall]
+
     # average semantic similarity between full transcript and full response
-    transcript_embedding, immediate_embeddings, delayed_embeddings,\
-    transcript_events, immediate_events, delayed_events = \
-        get_video_and_recall_trajectories(parsed['experiment'])
-
-    immediate_match = 1 - cdist(transcript_embedding, immediate_embeddings, metric='correlation')[0]
-    delayed_match = 1 - cdist(transcript_embedding, delayed_embeddings, metric='correlation')[0]
-
     stats['naturalistic recall']['immediate']['semantic match'] = pd.Series(index=np.arange(len(parsed['experiment'])))
-    stats['naturalistic recall']['delayed']['semantic match'] =  pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['delayed']['semantic match'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['immediate']['precision'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['delayed']['precision'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['immediate']['distinctiveness'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['delayed']['distinctiveness'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['immediate']['n events'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    stats['naturalistic recall']['delayed']['n events'] = pd.Series(index=np.arange(len(parsed['experiment'])))
+    try:
+        transcript_embedding, immediate_embeddings, delayed_embeddings, \
+        transcript_events, immediate_events, delayed_events = \
+            get_video_and_recall_trajectories(parsed['experiment'])
 
-    i = 0
-    j = 0
-    for s in np.arange(len(immediate_transcripts)):
-        if len(immediate_transcripts[s].strip()) > 0:
-            stats['naturalistic recall']['immediate']['semantic match'][s] = immediate_match[i]
-            i += 1
-        if len(delayed_transcripts[s].strip()) > 0:
-            stats['naturalistic recall']['delayed']['semantic match'][s] = delayed_match[j]
-            j += 1
+        immediate_match = 1 - cdist(transcript_embedding, immediate_embeddings, metric='correlation')[0]
+        delayed_match = 1 - cdist(transcript_embedding, delayed_embeddings, metric='correlation')[0]
 
-    # average precision
-    stats['naturalistic recall']['immediate']['precision'] = precision(transcript_events, immediate_events)
-    stats['naturalistic recall']['delayed']['precision'] = precision(transcript_events, delayed_events)
+        i = 0
+        j = 0
+        for s in np.arange(len(immediate_transcripts)):
+            if len(immediate_transcripts[s].strip()) > 0:
+                stats['naturalistic recall']['immediate']['semantic match'][s] = immediate_match[i]
+                i += 1
+            if len(delayed_transcripts[s].strip()) > 0:
+                stats['naturalistic recall']['delayed']['semantic match'][s] = delayed_match[j]
+                j += 1
 
-    # average distinctiveness
-    stats['naturalistic recall']['immediate']['distinctiveness'] = distinctiveness(transcript_events, immediate_events)
-    stats['naturalistic recall']['delayed']['distinctiveness'] = distinctiveness(transcript_events, delayed_events)
-
-    # number of detected events in response
-    stats['naturalistic recall']['immediate']['n events'] = pd.Series(index=np.arange(len(parsed['experiment'])),
-                                                                      data=[e.shape[0] for e in immediate_events])
-    stats['naturalistic recall']['delayed']['n events'] = pd.Series(index=np.arange(len(parsed['experiment'])),
-                                                                      data=[e.shape[0] for e in delayed_events])
+        stats['naturalistic recall']['immediate']['precision'] = precision(transcript_events, immediate_events)
+        stats['naturalistic recall']['delayed']['precision'] = precision(transcript_events, delayed_events)
+        stats['naturalistic recall']['immediate']['distinctiveness'] = distinctiveness(transcript_events, immediate_events)
+        stats['naturalistic recall']['delayed']['distinctiveness'] = distinctiveness(transcript_events, delayed_events)
+        stats['naturalistic recall']['immediate']['n events'] = pd.Series(index=np.arange(len(parsed['experiment'])),
+                                                                          data=[e.shape[0] for e in immediate_events])
+        stats['naturalistic recall']['delayed']['n events'] = pd.Series(index=np.arange(len(parsed['experiment'])),
+                                                                        data=[e.shape[0] for e in delayed_events])
+    except Exception:
+        warnings.warn('Could not compute naturalistic recall embeddings — filling with NaN. '
+                      'Install pydata-wrangler[hf] with a compatible API to fix this.')
 
     # number of sentences in response
     stats['naturalistic recall']['immediate']['n sentences'] = \
