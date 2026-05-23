@@ -1027,7 +1027,7 @@ def behavioral_stats(parsed):
     slopes = pd.Series(index=np.arange(len(parsed['experiment'])))
     for s in range(len(parsed['experiment'])):
         reg = LinearRegression().fit(np.atleast_2d(np.arange(2, 8)).T, np.atleast_2d(errors[s, :]).T)
-        slopes[s] = float(reg.coef_)
+        slopes[s] = float(reg.coef_.ravel()[0])
     stats['spatial learning']['immediate']['error change by n shapes'] = slopes
 
     # error (6 or 7 shapes) - error (2 or 3 shapes)
