@@ -459,8 +459,8 @@ def plot_trajectories(video, immediate_recall, delayed_recall, cmap=None):
         os.makedirs(save_dir)
     fname = os.path.join(save_dir, 'reduced_embeddings.pkl')
 
-    immediate_recall = [i for i in immediate_recall if np.prod(np.shape(i)) > 0]
-    delayed_recall = [d for d in delayed_recall if np.prod(np.shape(d)) > 0]
+    immediate_recall = [i for i in immediate_recall if np.prod(np.shape(i)) > 0 and not np.any(np.isnan(i))]
+    delayed_recall = [d for d in delayed_recall if np.prod(np.shape(d)) > 0 and not np.any(np.isnan(d))]
 
     if not os.path.exists(fname):
         best_params = optimize_embedding(video, immediate_recall, delayed_recall)
