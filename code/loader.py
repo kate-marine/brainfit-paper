@@ -976,29 +976,33 @@ def behavioral_stats(parsed):
         stats['vocab learning']['delayed']['error distance'].append(
             get_mean_error_dist(resp_delayed, pres_gle))
 
-        glove = {'model': 'WordEmbeddings', 'args': ['glove'], 'kwargs': {}}
-        eng_embeddings = dw.wrangle([w.lower() for w in pres_eng], text_kwargs={'model': glove})
+        try:
+            glove = {'model': 'WordEmbeddings', 'args': ['glove'], 'kwargs': {}}
+            eng_embeddings = dw.wrangle([w.lower() for w in pres_eng], text_kwargs={'model': glove})
 
-        # average pairwise semantic similarity of correct words (vs. all)
-        correct_inds = get_pres_inds([r[3] for i, r in enumerate(resp) if correct[i]], pres_gle, np.arange(10))
-        correct_inds_delayed = get_pres_inds([r[3] for i, r in enumerate(resp_delayed) if correct_delayed[i]], pres_gle,
-                                             np.arange(10))
-        incorrect_inds = get_pres_inds([r[3] for i, r in enumerate(resp) if not correct[i]], pres_gle, np.arange(10))
-        incorrect_inds_delayed = get_pres_inds([r[3] for i, r in enumerate(resp_delayed) if not correct_delayed[i]],
-                                               pres_gle, np.arange(10))
+            # average pairwise semantic similarity of correct words (vs. all)
+            correct_inds = get_pres_inds([r[3] for i, r in enumerate(resp) if correct[i]], pres_gle, np.arange(10))
+            correct_inds_delayed = get_pres_inds([r[3] for i, r in enumerate(resp_delayed) if correct_delayed[i]], pres_gle,
+                                                 np.arange(10))
+            incorrect_inds = get_pres_inds([r[3] for i, r in enumerate(resp) if not correct[i]], pres_gle, np.arange(10))
+            incorrect_inds_delayed = get_pres_inds([r[3] for i, r in enumerate(resp_delayed) if not correct_delayed[i]],
+                                                   pres_gle, np.arange(10))
 
-        average_similarity = corr_mean(1 - pdist(eng_embeddings, metric='correlation'))
+            average_similarity = corr_mean(1 - pdist(eng_embeddings, metric='correlation'))
 
-        stats['vocab learning']['immediate']['similarity: correct'].append(
-            corr_mean(1 - pdist(eng_embeddings.loc[correct_inds], metric='correlation')) / average_similarity)
-        stats['vocab learning']['delayed']['similarity: correct'].append(
-            corr_mean(1 - pdist(eng_embeddings.loc[correct_inds_delayed], metric='correlation')) / average_similarity)
-
-        # semantic pairwise similarity of errors (vs. all)
-        stats['vocab learning']['immediate']['similarity: incorrect'].append(
-            corr_mean(1 - pdist(eng_embeddings.loc[incorrect_inds], metric='correlation')) / average_similarity)
-        stats['vocab learning']['delayed']['similarity: incorrect'].append(
-            corr_mean(1 - pdist(eng_embeddings.loc[incorrect_inds_delayed], metric='correlation')) / average_similarity)
+            stats['vocab learning']['immediate']['similarity: correct'].append(
+                corr_mean(1 - pdist(eng_embeddings.loc[correct_inds], metric='correlation')) / average_similarity)
+            stats['vocab learning']['delayed']['similarity: correct'].append(
+                corr_mean(1 - pdist(eng_embeddings.loc[correct_inds_delayed], metric='correlation')) / average_similarity)
+            stats['vocab learning']['immediate']['similarity: incorrect'].append(
+                corr_mean(1 - pdist(eng_embeddings.loc[incorrect_inds], metric='correlation')) / average_similarity)
+            stats['vocab learning']['delayed']['similarity: incorrect'].append(
+                corr_mean(1 - pdist(eng_embeddings.loc[incorrect_inds_delayed], metric='correlation')) / average_similarity)
+        except Exception:
+            stats['vocab learning']['immediate']['similarity: correct'].append(np.nan)
+            stats['vocab learning']['delayed']['similarity: correct'].append(np.nan)
+            stats['vocab learning']['immediate']['similarity: incorrect'].append(np.nan)
+            stats['vocab learning']['delayed']['similarity: incorrect'].append(np.nan)
 
     for i in ['immediate', 'delayed']:
         for j in stats['vocab learning'][i].keys():
