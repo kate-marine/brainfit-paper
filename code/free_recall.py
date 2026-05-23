@@ -1,9 +1,15 @@
 # noinspection PyPackageRequirements
-import datawrangler as dw
+try:
+    import datawrangler as dw
+except ModuleNotFoundError:
+    dw = None
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
-import quail
+try:
+    import quail
+except (ModuleNotFoundError, ImportError):
+    quail = None
 
 import warnings
 
@@ -164,9 +170,9 @@ def split_by_feature(egg, feature):
 
         for v in vals:
             # get next presented and recalled words
-            next_pres_items = [dw.core.update_dict(x, {'item': w}) for w, x in
+            next_pres_items = [{**x, 'item': w} for w, x in
                                zip(pres_items.iloc[i], pres_features.iloc[i]) if x[feature] == v]
-            next_rec_items = [dw.core.update_dict(x, {'item': w}) for w, x in
+            next_rec_items = [{**x, 'item': w} for w, x in
                               zip(rec_items.iloc[i], rec_features.iloc[i]) if w in [y['item'] for y in
                                                                                     next_pres_items]]
 
