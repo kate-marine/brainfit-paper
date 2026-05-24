@@ -566,7 +566,7 @@ def corr_mean(rs, axis=0):
 def precision(video, recall):
     if type(recall) is list:
         return pd.Series(index=np.arange(len(recall)), data=[precision(video, r) for r in recall])
-    if np.prod(recall.shape) == 0:
+    if np.prod(recall.shape) == 0 or np.any(np.isnan(recall)):
         return np.nan
     return corr_mean(np.max(1 - cdist(video, recall, 'correlation'), 0))
 

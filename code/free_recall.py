@@ -16,12 +16,17 @@ import warnings
 
 def get_bounds(data, bounds):
     data = [d for d in data.values.ravel() if not np.isnan(d)]
+    if len(data) == 0:
+        return [np.nan] * len(bounds)
     return [np.percentile(data, p) for p in bounds]
 
 
 def distplot(data, bounds, cmap, x='Performance', y='Number of participants', bins=15):
     bound_vals = get_bounds(data, bounds)
     data = [d for d in data.values.ravel() if not np.isnan(d)]
+    if len(data) == 0:
+        print(f'Warning: no valid data for "{x}", skipping plot.')
+        return
 
     sns.histplot(data, kde=True, color='k', bins=bins, edgecolor='w')
     plt.xlabel(x, fontsize=14)
